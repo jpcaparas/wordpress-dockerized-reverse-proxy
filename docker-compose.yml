@@ -1,0 +1,49 @@
+version: '3.3'
+
+services:
+  nginx:
+    image: nginx:latest
+    depends_on:
+      - wordpress
+    container_name: nginx
+    ports:
+     - "8000:8000"
+    volumes:
+      - ./conf/nginx.d:/etc/nginx/conf.d
+      - ./volumes/nginx/logs/nginx:/var/log/nginx
+    restart: always
+    networks:
+      - wordpress
+  wordpress:
+    depends_on:
+      - mysql
+    image: wordpress:5.0.2
+    volumes:
+      - ./volumes/wordpress/var/www/html:/var/www/html
+    expose:
+      - "80"
+    restart: always
+    container_name: wordpress
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress_secret
+    networks:
+      - wordpress
+  mysql:
+    image: mysql:5.7
+    volumes:
+      - ./volumes/mysql/var/lib/mysql:/var/lib/mysql
+    expose:
+      - "3306"
+    restart: always
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: wordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress_secret
+    networks:
+     - wordpress
+networks:
+    wordpress:
